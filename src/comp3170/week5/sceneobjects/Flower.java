@@ -2,6 +2,8 @@ package comp3170.week5.sceneobjects;
 
 import static org.lwjgl.opengl.GL41.*;
 
+import java.util.ArrayList;
+
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -25,6 +27,9 @@ public class Flower extends SceneObject {
 	private int vertexBuffer;
 	private int[] indices;
 	private int indexBuffer;
+	
+	private float time;
+	private ArrayList<Flower> flowers = new ArrayList<Flower>();
 
 	public Flower(int nPetals) {
 		shader = ShaderLibrary.instance.compileShader(VERTEX_SHADER, FRAGMENT_SHADER);		
@@ -62,16 +67,33 @@ public class Flower extends SceneObject {
 	}
 	
 	public void drawSelf(Matrix4f mvpMatrix) {
+		
+//		long time = System.currentTimeMillis();
+//		System.out.println(Math.sin((float) time / 100));
+//		
+//			
+//		}
+		
 		shader.enable();
 		shader.setUniform("u_mvpMatrix", mvpMatrix);
 	    shader.setAttribute("a_position", vertexBuffer);
 	    shader.setUniform("u_colour", colour);	    
 	    
 	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	    glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);		
+	    glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
+	    
+	    //this.update(0.01f);
 	}
 	
 	public void update(float dt) {
+		time += dt;
+		
+//		for (int i = 2; i < 4; i++) {
+//			System.out.println(vertices[i]);
+//			vertices[i].x += Math.sin(time);
+//		}
+		getMatrix().m10((float) (getMatrix().get(0, 1) + Math.sin(time) * 0.03f));
+		//System.out.println(Math.sin(time));
 		// TODO: make the flower sway. (TASK 5)
 	}
 }

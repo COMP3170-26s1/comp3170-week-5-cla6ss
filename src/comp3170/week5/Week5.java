@@ -4,16 +4,23 @@ import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL41.*;
 
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.joml.Vector2f;
 import org.joml.Vector2i;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import comp3170.OpenGLException;
 import comp3170.IWindowListener;
 import comp3170.ShaderLibrary;
 import comp3170.Window;
+import comp3170.week5.sceneobjects.Flower;
 import comp3170.InputManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 
 public class Week5 implements IWindowListener {
@@ -27,6 +34,8 @@ public class Week5 implements IWindowListener {
 	private long oldTime;
 	
 	private Scene scene;
+	
+	
 
 	public Week5()  throws OpenGLException {		
 		
@@ -44,24 +53,68 @@ public class Week5 implements IWindowListener {
 	}
 	
 	private Vector2i position = new Vector2i();
+	
+	public Vector2f getCursorNDC() {
+		input.getCursorPos(position); // This will get the mouse position in screen space.
+		
+		float x = position.x;
+		float y = -position.y;
+		float nx = ((x / width) - 0.5f) * 2f;
+		float ny = ((y / height) + 0.5f) * 2f;
+		
+		return new Vector2f(nx,ny);
+	}
 		
 	private void update() {
 		long time = System.currentTimeMillis();
 		float deltaTime = (time - oldTime) / 1000f;
-		oldTime = time;		
+		oldTime = time;	
+		
 		if (input.wasMouseClicked()) {
 			// TODO: Get the mouse position into NDC, and then into world space. (TASK 2)
 			input.getCursorPos(position); // This will get the mouse position in screen space.
-
+			
+			float x = position.x;
+			float y = -position.y;
+			float nx = ((x / width) - 0.5f) * 2f;
+			float ny = ((y / height) + 0.5f) * 2f;
+			
+			//prepare the screen space NDC position into a matrix for multiplication
+			//using last column as that is where position is stored
+			Matrix4f p = new Matrix4f();
+			p.m30(nx);
+			p.m31(ny);
+			p.m33(1f);
+			
+			
+			//multiply projection then view matrices one at a time because I dunno how to otherwise
+			//then finally multiply with our NDC position
+			Matrix4f vMat = scene.sceneCam().viewMatrix;
+			Matrix4f pMat = scene.sceneCam().projectionMatrix;
+			Matrix4f uvp = new Matrix4f().identity();
+			uvp.mul(pMat);
+			uvp.mul(vMat);
+			uvp.invert();
+			uvp.mul(p);
+			
+			//extract the position from our Matrix4f we've been using
+			Vector3f pp = new Vector3f();
+			uvp.getTranslation(pp);
+			System.out.println();
+			
+			scene.createFlower(new Vector4f(pp.x,pp.y,0f,1f));
+			
+			//scene.createFlower(new Vector4f(nx,ny,0f,1f));
 			// TODO: Add a new flower at the mouse position. (TASK 3)
 		}
 		
 		input.clear(); // Run this to clear input before the next frame.
 		scene.update(input, deltaTime); // Use update() for scene logic and draw() to...well, draw.
+		
 	}
 
-	private Matrix4f viewMatrix  = new Matrix4f();
-	private Matrix4f projectionMatrix  = new Matrix4f();
+//	private Matrix4f viewMatrix  = new Matrix4f();
+//	private Matrix4f projectionMatrix  = new Matrix4f();
 	private Matrix4f mvpMatrix = new Matrix4f();
 	
 	public void draw() {
@@ -72,7 +125,13 @@ public class Week5 implements IWindowListener {
 		
 		// TODO: Use the view and projection matricies to construct the mvpMatrix. (TASK 2)
 		//			Then send it down the scene graph!
+		
+		
+		
 		scene.draw(mvpMatrix);
+		
+		
+		
 			
 	}
 
@@ -81,6 +140,7 @@ public class Week5 implements IWindowListener {
 		// record the new width and height
 		this.width = width;
 		this.height = height;
+		scene.sceneCam().resize(width, height);
 		glViewport(0,0,width,height);
 		// TODO: Recalculate the projection matrix when the window is resized. (TASK 2)
 	}
