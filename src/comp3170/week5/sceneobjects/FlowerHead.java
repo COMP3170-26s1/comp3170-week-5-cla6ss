@@ -50,6 +50,8 @@ public class FlowerHead extends SceneObject {
 		
 		vertices = new Vector4f[nPetals * 2];
 		
+		
+		float colourOffset = (colour.x * 3 + colour.y * 5 + colour.z * 7) % 1f - 0.5f;
 		float phi = ((1 + org.joml.Math.sqrt(5)) / 2f);
 		float offsetScale = 0.5f;
 		float degIncrement = Math.TAU / (nPetals * 2);
@@ -59,8 +61,8 @@ public class FlowerHead extends SceneObject {
 		for (int i = 0; i < nPetals * 2; i++) {
 			
 			
-			float x = org.joml.Math.sin(degIncrement * i + (phi * offsetScale));
-			float y = org.joml.Math.cos(degIncrement * i + (phi * offsetScale));
+			float x = org.joml.Math.sin(degIncrement * i + (phi * offsetScale) + colourOffset);
+			float y = org.joml.Math.cos(degIncrement * i + (phi * offsetScale) + colourOffset);
 			if (i % 2 == 0) {
 				
 				x *= innerRadius;

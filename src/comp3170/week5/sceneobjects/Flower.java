@@ -31,7 +31,9 @@ public class Flower extends SceneObject {
 	private float time;
 	private ArrayList<Flower> flowers = new ArrayList<Flower>();
 
-	public Flower(int nPetals) {
+	public Flower(float height) {
+		
+		time = colour.x * 3 + colour.y * 11 + colour.z * 19;
 		shader = ShaderLibrary.instance.compileShader(VERTEX_SHADER, FRAGMENT_SHADER);		
 	
 		// make the stem of the flower
@@ -48,12 +50,15 @@ public class Flower extends SceneObject {
 		//       0-----*-----1
 		//  (-w/2, 0)     (w/2, 0)	
 		
+		
+		
+		
 		//@formatter:off
 		vertices = new Vector4f[] {
 			new Vector4f(-WIDTH / 2,           0, 0, 1),
 			new Vector4f( WIDTH / 2,           0, 0, 1),
-			new Vector4f(-WIDTH / 2, HEIGHT, 0, 1),
-			new Vector4f( WIDTH / 2, HEIGHT, 0, 1),
+			new Vector4f(-WIDTH / 2, height, 0, 1),
+			new Vector4f( WIDTH / 2, height, 0, 1),
 		};
 		//@formatter:on
 		vertexBuffer = GLBuffers.createBuffer(vertices);
@@ -86,13 +91,17 @@ public class Flower extends SceneObject {
 	}
 	
 	public void update(float dt) {
-		time += dt;
+		float speed = 1.2f;
+		time += dt * speed;
 		
 //		for (int i = 2; i < 4; i++) {
 //			System.out.println(vertices[i]);
 //			vertices[i].x += Math.sin(time);
 //		}
-		getMatrix().m10((float) (getMatrix().get(0, 1) + Math.sin(time) * 0.03f));
+		float waveWidth = 1f;
+		float waveOffset = (float) Math.sin(time + Math.sin(getMatrix().m30() * waveWidth) + Math.cos(getMatrix().m31() * waveWidth));
+		float sway = (float) Math.sin(time) * 0.03f;
+		getMatrix().m10((float) (getMatrix().get(0, 1) + waveOffset * 0.05f));
 		//System.out.println(Math.sin(time));
 		// TODO: make the flower sway. (TASK 5)
 	}
